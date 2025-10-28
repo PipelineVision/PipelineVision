@@ -1,0 +1,43 @@
+services:
+  backend:
+    image: ${DOCKERHUB_USERNAME}/pipeline-vision-backend:latest
+    env_file:
+      - ../backend/.env
+    expose:
+      - "8000"
+    restart: always
+    networks:
+      - pipeline-vision-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+
+  caddy:
+    image: caddy:2-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ../config/Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    restart: always
+    networks:
+      - pipeline-vision-network
+    depends_on:
+      - backend
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  pipeline-vision-network:
+    driver: bridge
+
+volumes:
+  caddy_data:
+  caddy_config:

@@ -1,0 +1,49 @@
+import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
+
+const FASTAPI_BASE_URL =
+  process.env.FASTAPI_BASE_URL || "http://localhost:8000";
+
+export async function POST(request: NextRequest) {
+  try {
+    const session = await auth.api.getSession({
+      headers: request.headers,
+    });
+
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { user, session: sessionData } = session;
+
+    const response = await fetch(
+      `${FASTAPI_BASE_URL}/api/v1/accounts/process-automatic-memberships`,
+      {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${sessionData.token}`,
+          "X-User-ID": user.id,
+        },
+      }
+    );
+
+    if (!response.ok) {
+      console.error("Backend request failed:", response.statusText);
+      return NextResponse.json(
+        { error: "Failed to process automatic memberships" },
+        { status: response.status }
+      );
+    }
+
+    const data = await response.json();
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error("Error processing automatic memberships:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}

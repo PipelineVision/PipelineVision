@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pipeline-vision-github-runner-dashboard"
+version = "0.1.0"
+description = "A dashboard for monitoring GitHub runners"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi[standard]>=0.104.1",
+    "uvicorn[standard]>=0.24.0",
+    "sqlalchemy>=2.0.23",
+    "pydantic>=2.5.0",
+    "httpx>=0.25.1",
+    "python-jose>=3.3.0",
+    "passlib>=1.7.4",
+    "python-multipart>=0.0.6",
+    "redis>=5.0.1",
+    "PyJWT>=2.8.0",
+    "cryptography>=41.0.0",
+    "psycopg2-binary>=2.9.9",
+    "python-dotenv>=1.1.0",
+    "structlog",
+]
+
+[tool.setuptools]
+packages = ["app"]
