@@ -17,7 +17,9 @@ export function middleware(request: NextRequest) {
   );
 
   if (isProtectedRoute) {
-    const sessionToken = request.cookies.get("better-auth.session_token");
+    const sessionToken = request.cookies.get(
+      "better-auth.session_token"
+    )?.value;
 
     if (!sessionToken) {
       const loginUrl = new URL("/login", request.url);
@@ -27,7 +29,9 @@ export function middleware(request: NextRequest) {
   }
 
   if (pathname === "/login") {
-    const sessionToken = request.cookies.get("better-auth.session_token");
+    const sessionToken = request.cookies.get(
+      "better-auth.session_token"
+    )?.value;
 
     if (sessionToken) {
       return NextResponse.redirect(new URL("/dashboard", request.url));
