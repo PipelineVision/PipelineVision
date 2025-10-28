@@ -10,53 +10,42 @@ const protectedRoutes = [
 ];
 
 export function middleware(request: NextRequest) {
-  try {
-    const pathname = request.nextUrl.pathname;
+  const { pathname } = request.nextUrl;
 
-    const isProtectedRoute = protectedRoutes.some((route) =>
-      pathname.startsWith(route)
-    );
+  const isProtectedRoute = protectedRoutes.some((route) =>
+    pathname.startsWith(route)
+  );
 
-    if (isProtectedRoute) {
-      const sessionToken = request.cookies.get(
-        "better-auth.session_token"
-      )?.value;
+  if (isProtectedRoute) {
+    const sessionToken = request.cookies.get("better-auth.session_token");
 
-      if (!sessionToken) {
-        const url = request.nextUrl.clone();
-        url.pathname = "/login";
-        url.searchParams.set("callbackUrl", pathname);
-        return NextResponse.redirect(url);
-      }
+    if (!sessionToken) {
+      const loginUrl = new URL("/login", request.url);
+      loginUrl.searchParams.set("callbackUrl", pathname);
+      return NextResponse.redirect(loginUrl);
     }
-
-    if (pathname === "/login") {
-      const sessionToken = request.cookies.get(
-        "better-auth.session_token"
-      )?.value;
-
-      if (sessionToken) {
-        const url = request.nextUrl.clone();
-        url.pathname = "/dashboard";
-        url.search = "";
-        return NextResponse.redirect(url);
-      }
-    }
-
-    return NextResponse.next();
-  } catch (error) {
-    console.error("Middleware error:", error);
-    return NextResponse.next();
   }
+
+  if (pathname === "/login") {
+    const sessionToken = request.cookies.get("better-auth.session_token");
+
+    if (sessionToken) {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
+  }
+
+  return NextResponse.next();
 }
 
 export const config = {
   matcher: [
-    "/dashboard/:path*",
-    "/workflows/:path*",
-    "/runners/:path*",
-    "/jobs/:path*",
-    "/account/:path*",
-    "/login",
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - public folder
+     */
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };
