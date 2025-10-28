@@ -3,9 +3,21 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db } from "./db";
 import * as schema from "./schema";
 
-const trustedOrigins = process.env.TRUSTED_ORIGINS
-  ? process.env.TRUSTED_ORIGINS.split(",").map((o) => o.trim())
-  : [];
+const trustedOrigins = [
+  ...(process.env.VERCEL_URL ? [`https://${process.env.VERCEL_URL}`] : []),
+  ...(process.env.BETTER_AUTH_URL ? [process.env.BETTER_AUTH_URL] : []),
+  ...(process.env.TRUSTED_ORIGINS
+    ? process.env.TRUSTED_ORIGINS.split(",").map((o) => o.trim())
+    : []),
+  "http://localhost:3000",
+  "https://www.pipelinevision.app",
+  "https://pipelinevision.app",
+  "https://pipeline-vision.vercel.app",
+];
+
+const uniqueTrustedOrigins = [...new Set(trustedOrigins.filter(Boolean))];
+
+console.log("Trusted origins:", uniqueTrustedOrigins);
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
@@ -49,7 +61,7 @@ export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL || 
            process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 
            "http://localhost:3000",
-  trustedOrigins,
+  trustedOrigins: uniqueTrustedOrigins,
   callbacks: {
     after: [
       {
