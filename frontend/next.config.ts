@@ -2,8 +2,8 @@ import type { NextConfig } from "next";
 
 const connectSrc =
   process.env.NODE_ENV === "development"
-    ? "'self' http://localhost:8000 https://api.github.com"
-    : `'self' ${process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://pipelinevision.app'} https://api.github.com`;
+    ? "'self' http://localhost:3000 http://localhost:8000 https://pipelinevision.app https://api.github.com"
+    : "'self' https://pipelinevision.app https://api.github.com";
 
 const nextConfig: NextConfig = {
   output: "standalone",
