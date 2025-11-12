@@ -1,0 +1,49 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: backend
+          file: docker/backend.Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/pipeline-vision-backend:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/pipeline-vision-backend:${{ github.sha }}
+
+      - name: Deploy to EC2
+        run: |
+          # Navigate to project directory
+          cd ~/production
+
+          # Login to Docker Hub
+          echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+
+          # Pull latest image
+          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/pipeline-vision-backend:latest
+
+          # Update and restart services
+          docker-compose down
+          docker-compose pull
+          docker-compose up -d
+
+          # Clean up old images
+          docker image prune -af

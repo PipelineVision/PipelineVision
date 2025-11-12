@@ -1,0 +1,189 @@
+.env
+.env.*
+.env.local
+.env.development
+.env.production
+.env.staging
+.env.test
+
+# Private keys and certificates
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.cer
+*.der
+*.jks
+*.keystore
+*.ssh
+id_rsa*
+id_ecdsa*
+id_ed25519*
+
+# GitHub App private keys
+github_private_key*
+*private_key*
+
+# Auth secrets and tokens
+*secret*
+*token*
+*.jwt
+
+# Database credentials and backups
+*.sql
+*.dump
+*.backup
+database.sqlite*
+*.db
+
+# ===============================================
+# BUILD OUTPUTS & DEPENDENCIES
+# ===============================================
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-debug.log*
+lerna-debug.log*
+.npm
+.yarn
+.yarn-integrity
+.pnp.*
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+.venv/
+venv/
+ENV/
+env/
+.env/
+
+# ===============================================
+# FRONTEND BUILD OUTPUTS
+# ===============================================
+
+# Next.js
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+
+# React/Vue/Angular
+build/
+dist/
+coverage/
+
+# ===============================================
+# BACKEND & DEVELOPMENT
+# ===============================================
+
+# FastAPI/Python
+*.log
+logs/
+*.pid
+*.seed
+*.pid.lock
+
+# Docker
+.dockerignore
+
+# IDEs and editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# ===============================================
+# CLOUD & DEPLOYMENT CONFIGS
+# ===============================================
+.vercel
+.netlify
+.aws/
+.gcp/
+docker-compose.override.yml
+kubernetes-secrets.yml
+deployment-secrets.*
+
+# ===============================================
+# TESTING & TEMPORARY FILES
+# ===============================================
+coverage/
+nyc_output/
+.coverage
+.pytest_cache/
+.tox/
+.cache
+.temp/
+tmp/
+temp/
+
+# ===============================================
+# MISC SENSITIVE FILES
+# ===============================================
+*.bak
+*.backup
+*.orig
+config.local.*
+local-config.*
+*-local.*
+
+# ===============================================
+# PROJECT SPECIFIC
+# ===============================================
+
+# Database migration files with real data
+*_migration_*.sql
+data_dump_*.sql
+
+# Local development overrides
+docker-compose.local.yml
+compose.override.yml
+
+# Test data that might contain real info
+test-data/
+fixtures/real-*
+
+backend/logs/app.log
+
+
+# Bruno
+**/tests/bruno/Observy/
+*.bru
+
+# Demo (WIP)
+demo/*
+components/demo-sidebar.tsx
+components/demo-worfklow-run-details.tsx
