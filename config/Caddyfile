@@ -1,4 +1,7 @@
-pipelinevision.app {
+# ===================
+# PRODUCTION API
+# ===================
+api.pipelinevision.app {
     @sse path /api/v1/events*
     reverse_proxy @sse backend:8000 {
         header_up Host {host}
@@ -25,7 +28,7 @@ pipelinevision.app {
         X-Content-Type-Options nosniff
         X-Frame-Options DENY
         X-XSS-Protection "1; mode=block"
-        Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://avatars.githubusercontent.com; font-src 'self' data:; connect-src 'self' https://pipelinevision.app https://api.github.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+        Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://avatars.githubusercontent.com; font-src 'self' data:; connect-src 'self' https://api.pipelinevision.app https://api.github.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
         Permissions-Policy "geolocation=(), microphone=(), camera=()"
     }
 
@@ -34,6 +37,39 @@ pipelinevision.app {
     }
 }
 
-www.pipelinevision.app {
-    redir https://pipelinevision.app{uri} permanent
+# ===================
+# DEVELOPMENT API
+# ===================
+dev-api.pipelinevision.app {
+    @sse path /api/v1/events*
+    reverse_proxy @sse backend-dev:8000 {
+        header_up Host {host}
+        header_up X-Real-IP {remote}
+        header_up X-Forwarded-For {remote}
+        header_up X-Forwarded-Proto {scheme}
+        header_up X-Forwarded-Host {host}
+        header_up X-Forwarded-Port {port}
+
+        flush_interval -1
+    }
+
+    reverse_proxy backend-dev:8000 {
+        header_up Host {host}
+        header_up X-Real-IP {remote}
+        header_up X-Forwarded-For {remote}
+        header_up X-Forwarded-Proto {scheme}
+        header_up X-Forwarded-Host {host}
+        header_up X-Forwarded-Port {port}
+    }
+
+    header {
+        X-Content-Type-Options nosniff
+        X-Frame-Options DENY
+        X-XSS-Protection "1; mode=block"
+        Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://avatars.githubusercontent.com; font-src 'self' data:; connect-src 'self' https://dev-api.pipelinevision.app https://api.github.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+    }
+
+    encode gzip {
+        not path /api/v1/events*
+    }
 }

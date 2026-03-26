@@ -1,9 +1,18 @@
-name: Deploy to EC2
+name: Deploy
 
 on:
   push:
-    branches: [master]
+    branches: [master, develop]
   workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - prod
+          - dev
 
 jobs:
   build-and-deploy:
@@ -12,6 +21,26 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Set environment variables
+        id: env
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            ENV="${{ github.event.inputs.environment }}"
+          elif [[ "${{ github.ref }}" == "refs/heads/master" ]]; then
+            ENV="prod"
+          else
+            ENV="dev"
+          fi
+
+          if [[ "$ENV" == "prod" ]]; then
+            echo "tag=latest" >> $GITHUB_OUTPUT
+            echo "compose_file=docker-compose.yaml" >> $GITHUB_OUTPUT
+          else
+            echo "tag=dev" >> $GITHUB_OUTPUT
+            echo "compose_file=docker-compose.dev.yaml" >> $GITHUB_OUTPUT
+          fi
+          echo "environment=$ENV" >> $GITHUB_OUTPUT
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -26,24 +55,33 @@ jobs:
           file: docker/backend.Dockerfile
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/pipeline-vision-backend:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/pipeline-vision-backend:${{ steps.env.outputs.tag }}
             ${{ secrets.DOCKERHUB_USERNAME }}/pipeline-vision-backend:${{ github.sha }}
 
-      - name: Deploy to EC2
+      - name: Deploy to server
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
         run: |
-          # Navigate to project directory
           cd ~/production
+
+          # Pull latest code
+          git fetch origin ${{ github.ref_name }}
+          git reset --hard origin/${{ github.ref_name }}
 
           # Login to Docker Hub
           echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
 
           # Pull latest image
-          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/pipeline-vision-backend:latest
+          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/pipeline-vision-backend:${{ steps.env.outputs.tag }}
 
           # Update and restart services
-          docker-compose down
-          docker-compose pull
-          docker-compose up -d
+          cd docker
+          export DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}
+          docker compose -f ${{ steps.env.outputs.compose_file }} down
+          docker compose -f ${{ steps.env.outputs.compose_file }} pull
+          docker compose -f ${{ steps.env.outputs.compose_file }} up -d
 
           # Clean up old images
           docker image prune -af
+
+          echo "Deployed ${{ steps.env.outputs.environment }} environment successfully"

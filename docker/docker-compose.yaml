@@ -1,6 +1,7 @@
 services:
   backend:
     image: ${DOCKERHUB_USERNAME}/pipeline-vision-backend:latest
+    container_name: pv-backend-prod
     env_file:
       - ../backend/.env
     expose:
@@ -16,6 +17,7 @@ services:
 
   caddy:
     image: caddy:2-alpine
+    container_name: pv-caddy
     ports:
       - "80:80"
       - "443:443"
