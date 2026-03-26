@@ -8,6 +8,9 @@ const connectSrc =
 const nextConfig: NextConfig = {
   output: "standalone",
 
+  // Required for Next.js 16 with webpack config
+  turbopack: {},
+
   experimental: {
     optimizePackageImports: ["@radix-ui/react-icons", "lucide-react"],
   },
