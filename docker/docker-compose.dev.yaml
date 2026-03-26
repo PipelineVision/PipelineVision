@@ -1,0 +1,21 @@
+services:
+  backend-dev:
+    image: ${DOCKERHUB_USERNAME}/pipeline-vision-backend:dev
+    container_name: pv-backend-dev
+    env_file:
+      - ../backend/.env.dev
+    expose:
+      - "8000"
+    restart: always
+    networks:
+      - pipeline-vision-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "3"
+
+networks:
+  pipeline-vision-network:
+    external: true
+    name: docker_pipeline-vision-network
