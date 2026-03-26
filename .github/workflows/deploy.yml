@@ -62,6 +62,9 @@ jobs:
         run: |
           cd ~/production
 
+          # Pull latest code
+          git pull origin ${{ github.ref_name }}
+
           # Login to Docker Hub
           echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
 
@@ -69,9 +72,10 @@ jobs:
           docker pull ${{ secrets.DOCKERHUB_USERNAME }}/pipeline-vision-backend:${{ steps.env.outputs.tag }}
 
           # Update and restart services
-          docker-compose -f ${{ steps.env.outputs.compose_file }} down
-          docker-compose -f ${{ steps.env.outputs.compose_file }} pull
-          docker-compose -f ${{ steps.env.outputs.compose_file }} up -d
+          cd docker
+          docker compose -f ${{ steps.env.outputs.compose_file }} down
+          docker compose -f ${{ steps.env.outputs.compose_file }} pull
+          docker compose -f ${{ steps.env.outputs.compose_file }} up -d
 
           # Clean up old images
           docker image prune -af
