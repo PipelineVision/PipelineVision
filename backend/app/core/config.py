@@ -18,7 +18,14 @@ class Settings:
     REDIS_URL: str = str(os.getenv("REDIS_URL"))
 
     GITHUB_APP_ID: str = str(os.getenv("GITHUB_APP_ID"))
-    GITHUB_APP_PRIVATE_KEY: str = str(os.getenv("GITHUB_APP_PRIVATE_KEY"))
+
+    @property
+    def GITHUB_APP_PRIVATE_KEY(self) -> str:
+        key_path = os.getenv("GITHUB_APP_PRIVATE_KEY_PATH", "")
+        if key_path:
+            with open(key_path) as f:
+                return f.read()
+
     GITHUB_APP_WEBHOOK_SECRET: str = str(os.getenv("GITHUB_APP_WEBHOOK_SECRET"))
 
     class Config:

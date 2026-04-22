@@ -1,14 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useRef, useMemo } from "react";
 import {
   Search,
   Download,
   RefreshCw,
   ChevronDown,
   ChevronUp,
-  Play,
-  Pause,
   Terminal,
   Clock,
   Hash,
@@ -89,7 +87,7 @@ function JobLogLine({
   const highlightedContent = searchTerm
     ? log.content.replace(
         new RegExp(`(${searchTerm})`, "gi"),
-        '<mark class="bg-yellow-200 dark:bg-yellow-800">$1</mark>'
+        '<mark class="bg-yellow-200 dark:bg-yellow-800">$1</mark>',
       )
     : log.content;
 
@@ -120,7 +118,6 @@ function JobLogLine({
   );
 }
 
-// TODO: The step order is messed up. Temp fix is using the index.
 function JobStepSection({
   number,
   stepNumber,
@@ -217,7 +214,7 @@ export function JobLogsViewer({
   const [autoScroll, setAutoScroll] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [openSteps, setOpenSteps] = useState<Set<number | null>>(
-    new Set([null, 1, 2, 3])
+    new Set([null, 1, 2, 3]),
   ); // Start with job setup and first few steps open
 
   const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -238,14 +235,17 @@ export function JobLogsViewer({
   // Group logs by step - enhanced to handle step estimation when step_number is null
   const logsByStep = useMemo(() => {
     if (logs.length === 0 || steps.length === 0) {
-      return logs.reduce((acc, log) => {
-        const stepKey = log.step_number || 1;
-        if (!acc[stepKey]) {
-          acc[stepKey] = [];
-        }
-        acc[stepKey].push(log);
-        return acc;
-      }, {} as Record<number, JobLog[]>);
+      return logs.reduce(
+        (acc, log) => {
+          const stepKey = log.step_number || 1;
+          if (!acc[stepKey]) {
+            acc[stepKey] = [];
+          }
+          acc[stepKey].push(log);
+          return acc;
+        },
+        {} as Record<number, JobLog[]>,
+      );
     }
 
     // If logs don't have proper step numbers, estimate based on content and timing
@@ -277,21 +277,15 @@ export function JobLogsViewer({
       const filtered = stepLogs.filter((log) =>
         searchTerm
           ? log.content.toLowerCase().includes(searchTerm.toLowerCase())
-          : true
+          : true,
       );
       if (filtered.length > 0) {
         acc[key] = filtered;
       }
       return acc;
     },
-    {} as Record<number, JobLog[]>
+    {} as Record<number, JobLog[]>,
   );
-
-  // Create step info map
-  // const stepInfoMap = steps.reduce((acc, step) => {
-  //   acc[step.step_number] = step;
-  //   return acc;
-  // }, {} as Record<number, JobStep>);
 
   const toggleStep = (stepNumber: number | null) => {
     const newOpenSteps = new Set(openSteps);
@@ -302,18 +296,6 @@ export function JobLogsViewer({
     }
     setOpenSteps(newOpenSteps);
   };
-
-  // Auto-scroll to bottom when new logs arrive
-  useEffect(() => {
-    if (autoScroll && scrollAreaRef.current) {
-      const scrollContainer = scrollAreaRef.current.querySelector(
-        "[data-radix-scroll-area-viewport]"
-      );
-      if (scrollContainer) {
-        scrollContainer.scrollTop = scrollContainer.scrollHeight;
-      }
-    }
-  }, [filteredLogsByStep, autoScroll]);
 
   const handleRefresh = () => {
     refreshLogsMutation.mutate(jobId);
@@ -343,13 +325,15 @@ export function JobLogsViewer({
 
   // Get unique step numbers for filtering
   const stepNumbers = Array.from(
-    new Set(logs.filter((log) => log.step_number).map((log) => log.step_number))
+    new Set(
+      logs.filter((log) => log.step_number).map((log) => log.step_number),
+    ),
   ).sort((a, b) => (a || 0) - (b || 0));
 
   // Get total log count for display
   const totalFilteredLogs = Object.values(filteredLogsByStep).reduce(
     (sum, stepLogs) => sum + stepLogs.length,
-    0
+    0,
   );
 
   if (error) {
@@ -391,25 +375,9 @@ export function JobLogsViewer({
                 ? `${totalFilteredLogs} of ${logs.length}`
                 : `${logs.length}`}{" "}
               log lines
-              {rawLogs?.total_lines &&
-                rawLogs.total_lines !== logs.length &&
-                ` (${rawLogs.total_lines} total)`}
             </CardDescription>
           </div>
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setAutoScroll(!autoScroll)}
-              className={autoScroll ? "bg-muted" : ""}
-            >
-              {autoScroll ? (
-                <Pause className="h-4 w-4" />
-              ) : (
-                <Play className="h-4 w-4" />
-              )}
-              Auto-scroll
-            </Button>
             <Button
               variant="outline"
               size="sm"
@@ -527,12 +495,12 @@ export function JobLogsViewer({
               {/* Then show all steps in order, including empty ones */}
               {steps
                 .sort((a, b) => a.step_number - b.step_number)
-                .map((step, index) => {
+                .map((step) => {
                   const stepLogs = filteredLogsByStep[step.step_number] || [];
 
                   return (
                     <JobStepSection
-                      number={index}
+                      number={step.step_number}
                       key={step.step_number}
                       stepNumber={step.step_number}
                       stepName={step.name}

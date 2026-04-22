@@ -42,7 +42,7 @@ async def get_job_logs(
         total_logs = query.count()
 
         if total_logs == 0:
-            raise HTTPException(status_code=404, detail="No logs found for this job")
+            return []
 
         if step_number is not None:
             query = query.filter(JobLog.step_number == step_number)

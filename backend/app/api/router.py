@@ -25,7 +25,7 @@ api_router.include_router(
 )
 api_router.include_router(workflows.router, prefix="/workflows", tags=["workflows"])
 api_router.include_router(jobs.router, prefix="/jobs", tags=["jobs"])
-api_router.include_router(logs.router, prefix="/logs", tags=["logs"])
+api_router.include_router(logs.router, tags=["logs"])
 api_router.include_router(organization.router, prefix="/organization", tags=["organization"])
 api_router.include_router(users.router, prefix="/users", tags=["users"])
 api_router.include_router(sse.router, tags=["sse"])
