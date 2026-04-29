@@ -25,6 +25,8 @@ export function useOnboardingState() {
     },
     enabled: !!session?.user,
     retry: 1,
+    refetchInterval: 3000,
+    refetchIntervalInBackground: false,
   });
 
   const { data: preferences, isLoading: preferencesLoading } = useQuery({
@@ -48,7 +50,7 @@ export function useOnboardingState() {
     }
 
     if (membershipsLoading || preferencesLoading) {
-      return "complete";
+      return "loading";
     }
 
     if (!memberships || memberships.length === 0) {

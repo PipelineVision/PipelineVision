@@ -30,6 +30,7 @@ export async function GET(request: NextRequest) {
         Accept: "text/event-stream",
         "Cache-Control": "no-cache",
       },
+      cache: "no-store",
     });
 
     if (!backendResponse.ok) {

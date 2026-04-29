@@ -4,8 +4,7 @@ import logging
 import time
 from typing import Dict
 
-import redis
-
+import redis.asyncio as aioredis
 
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
@@ -19,21 +18,31 @@ from app.core.config import settings
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
-
 # TODO: Look into the issue with redis not clearing out old connections (Might be a fast reload issue?)
 # TODO: Remove dict fallback eventually
 # TODO: Weird caching issue that seems to happen when the client disconnects and reconnects
 
-try:
-    redis_client = redis.from_url(settings.REDIS_URL, decode_responses=True)
-    redis_client.ping()
-    sse_manager = RedisSSEManager(redis_client)
-    logger.info(f"SSE using Redis at {settings.REDIS_URL}")
-except Exception as e:
-    sse_manager = None
-    logger.warning(f"SSE falling back to memory-based connections: {e}")
-    connections: Dict[str, asyncio.Queue] = {}
-    user_orgs: Dict[str, int] = {}
+sse_manager: RedisSSEManager | None = None
+connections: Dict[str, asyncio.Queue] = {}
+user_orgs: Dict[str, int] = {}
+
+
+async def init_sse_manager():
+    global sse_manager
+    try:
+        redis_client = aioredis.from_url(
+            settings.REDIS_URL,
+            decode_responses=True,
+            socket_timeout=5,
+            socket_connect_timeout=5,
+            ssl_cert_reqs=None,
+        )
+        await redis_client.ping()
+        sse_manager = RedisSSEManager(redis_client)
+        logger.info(f"SSE using Redis at {settings.REDIS_URL}")
+    except Exception as e:
+        sse_manager = None
+        logger.warning(f"SSE falling back to memory-based connections: {e}")
 
 
 @router.get("/events")
@@ -63,7 +72,10 @@ async def stream_events(
 
     if sse_manager:
         try:
-            queue = await sse_manager.register_connection(user_id, org_id)
+            queue = await asyncio.wait_for(
+                sse_manager.register_connection(user_id, org_id),
+                timeout=5.0,
+            )
             logger.info(f"Redis SSE: Registered user {user_id} for org {org_id}")
         except Exception as e:
             logger.error(

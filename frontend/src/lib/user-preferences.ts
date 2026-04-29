@@ -7,7 +7,7 @@ interface ApiResponse {
 
 export async function getPreference(): Promise<Preference | null> {
   try {
-    const res = await fetch("/api/preferences");
+    const res = await fetch("/api/account/preferences");
 
     if (!res.ok) {
       return null;

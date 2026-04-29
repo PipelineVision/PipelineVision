@@ -326,11 +326,10 @@ class RedisSSEManager:
     async def _execute_redis_cmd(self, command: str, *args, **kwargs):
         """Execute a Redis command with error handling."""
         try:
-            cmd = getattr(self.redis, command)
-            if asyncio.iscoroutinefunction(cmd):
-                return await cmd(*args, **kwargs)
-            else:
-                return cmd(*args, **kwargs)
+            result = getattr(self.redis, command)(*args, **kwargs)
+            if asyncio.iscoroutine(result):
+                return await result
+            return result
         except Exception as e:
             logger.error(f"Redis command '{command}' failed: {e}")
             return None
@@ -338,10 +337,9 @@ class RedisSSEManager:
     async def _execute_pipeline(self, pipe):
         """Execute a Redis pipeline with error handling."""
         try:
-            if asyncio.iscoroutinefunction(pipe.execute):
-                result = await pipe.execute()
-            else:
-                result = pipe.execute()
+            result = pipe.execute()
+            if asyncio.iscoroutine(result):
+                result = await result
             return result
         except Exception as e:
             logger.error(f"Redis pipeline execution failed: {e}")

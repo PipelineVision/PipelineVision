@@ -46,7 +46,7 @@ export function PreferenceProvider({
   initialPreference,
 }: ProviderProps) {
   const [preference, setPreference] = useState<Preference | null>(
-    initialPreference || null
+    initialPreference || null,
   );
   const [isLoading, setIsLoading] = useState(!initialPreference);
 
@@ -68,6 +68,13 @@ export function PreferenceProvider({
       fetchPreference();
     }
   }, [initialPreference]);
+
+  useEffect(() => {
+    if (preference?.organization_id) return;
+
+    const interval = setInterval(fetchPreference, 4000);
+    return () => clearInterval(interval);
+  }, [preference?.organization_id]);
 
   const value: ContextValue = {
     preference,

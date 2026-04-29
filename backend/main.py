@@ -13,6 +13,7 @@ from app.core.config import settings
 # from app.core.scheduler import runner_scheduler
 from app.middleware.logging import StructuredLoggingMiddleware
 from app.middleware.auth import BetterAuthMiddleware
+from app.api.endpoints.sse import init_sse_manager
 
 load_dotenv()
 
@@ -26,10 +27,9 @@ origins = os.getenv("BACKEND_CORS_ORIGINS", "").split(",")
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan manager"""
-    # Startup
+    await init_sse_manager()
     # await runner_scheduler.start()
     yield
-    # Shutdown
     # await runner_scheduler.stop()
 
 
