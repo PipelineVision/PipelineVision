@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { formatDistanceToNow } from "date-fns";
+import { formatRelativeTime } from "@/lib/date-utils";
 import {
   Search,
   RefreshCw,
@@ -120,7 +120,7 @@ function WorkflowsTable({ className }: { className?: string }) {
     data?.workflows.filter(
       (workflow) =>
         !searchTerm ||
-        workflow.name.toLowerCase().includes(searchTerm.toLowerCase())
+        workflow.name.toLowerCase().includes(searchTerm.toLowerCase()),
     ) || [];
 
   const handleStateChange = (value: string) => {
@@ -280,10 +280,7 @@ function WorkflowsTable({ className }: { className?: string }) {
                       <Clock className="h-4 w-4 text-muted-foreground" />
                       <span className="text-xs">
                         {workflow.stats.last_run_at
-                          ? formatDistanceToNow(
-                              new Date(workflow.stats.last_run_at),
-                              { addSuffix: true }
-                            )
+                          ? formatRelativeTime(workflow.stats.last_run_at)
                           : "Never"}
                       </span>
                     </div>
@@ -300,7 +297,7 @@ function WorkflowsTable({ className }: { className?: string }) {
                           }/actions/workflows/${workflow.path
                             .split("/")
                             .pop()}`,
-                          "_blank"
+                          "_blank",
                         );
                       }}
                       className="h-8 w-8 p-0"

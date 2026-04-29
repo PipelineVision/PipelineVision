@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { formatDistanceToNow } from "date-fns";
+import { formatRelativeTime } from "@/lib/date-utils";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import {
   Search,
@@ -44,7 +44,7 @@ import { useJobsWithPagination, Job } from "@/app/hooks/useJobs";
 function getStatusIcon(
   status: string,
   conclusion?: string | null,
-  className?: string
+  className?: string,
 ) {
   if (status === "in_progress") {
     return <Play className={`${className || "h-4 w-4"} text-blue-500`} />;
@@ -112,16 +112,17 @@ function getStatusBadge(status: string, conclusion?: string | null) {
 function formatDuration(startTime?: string, endTime?: string) {
   if (!startTime || !endTime) return "—";
 
-  const start = new Date(startTime);
-  const end = new Date(endTime);
+  const parseUTC = (s: string) => new Date(/[Z+]/.test(s) ? s : s + "Z");
+  const start = parseUTC(startTime);
+  const end = parseUTC(endTime);
   const diff = end.getTime() - start.getTime();
 
-  const minutes = Math.floor(diff / 60000);
+  const hours = Math.floor(diff / 3600000);
+  const minutes = Math.floor((diff % 3600000) / 60000);
   const seconds = Math.floor((diff % 60000) / 1000);
 
-  if (minutes > 0) {
-    return `${minutes}m ${seconds}s`;
-  }
+  if (hours > 0) return `${hours}h ${minutes}m`;
+  if (minutes > 0) return `${minutes}m ${seconds}s`;
   return `${seconds}s`;
 }
 
@@ -198,7 +199,7 @@ function VirtualizedTable({ jobs }: VirtualizedTableProps) {
 
                   <div>
                     <div className="font-mono text-sm">
-                      {job.workflow_name || "—"}
+                      {/* {job.workflow_name || "—"} */}
                     </div>
                   </div>
 
@@ -219,7 +220,7 @@ function VirtualizedTable({ jobs }: VirtualizedTableProps) {
                       <span className="text-sm">
                         {formatDuration(
                           job.started_at || undefined,
-                          job.completed_at || undefined
+                          job.completed_at || undefined,
                         )}
                       </span>
                     </div>
@@ -229,11 +230,7 @@ function VirtualizedTable({ jobs }: VirtualizedTableProps) {
                     <div className="flex items-center gap-1">
                       <Calendar className="h-3 w-3 text-muted-foreground" />
                       <span className="text-sm">
-                        {job.started_at
-                          ? formatDistanceToNow(new Date(job.started_at), {
-                              addSuffix: true,
-                            })
-                          : "—"}
+                        {formatRelativeTime(job.started_at || undefined)}
                       </span>
                     </div>
                   </div>
@@ -422,7 +419,7 @@ function JobsTable({ className }: { className?: string }) {
             Showing {(filters.offset || 0) + 1} to{" "}
             {Math.min(
               (filters.offset || 0) + (filters.limit || 50),
-              data.total
+              data.total,
             )}{" "}
             of {data.total} jobs
           </div>

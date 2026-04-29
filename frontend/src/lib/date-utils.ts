@@ -1,6 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { formatDistanceToNow, format } from "date-fns";
 
+function parseUTC(dateString: string): Date {
+  return new Date(/[Z+]/.test(dateString) ? dateString : dateString + "Z");
+}
+
 /**
  * Format a UTC date string to local time
  */
@@ -8,8 +12,7 @@ export function formatToLocalTime(dateString?: string): string {
   if (!dateString) return "—";
 
   try {
-    const date = new Date(dateString);
-    // Check if date is valid
+    const date = parseUTC(dateString);
     if (isNaN(date.getTime())) return "—";
 
     return format(date, "MMM d, yyyy HH:mm");
@@ -26,7 +29,7 @@ export function formatRelativeTime(dateString?: string): string {
   if (!dateString) return "—";
 
   try {
-    const date = new Date(dateString);
+    const date = parseUTC(dateString);
     if (isNaN(date.getTime())) return "—";
 
     return formatDistanceToNow(date, { addSuffix: true });
@@ -41,13 +44,13 @@ export function formatRelativeTime(dateString?: string): string {
  */
 export function formatDuration(
   startedAt?: string,
-  completedAt?: string
+  completedAt?: string,
 ): string {
   if (!startedAt || !completedAt) return "—";
 
   try {
-    const start = new Date(startedAt);
-    const end = new Date(completedAt);
+    const start = parseUTC(startedAt);
+    const end = parseUTC(completedAt);
 
     if (isNaN(start.getTime()) || isNaN(end.getTime())) return "—";
 
