@@ -188,3 +188,12 @@ backend/logs/app.log
 demo/*
 components/demo-sidebar.tsx
 components/demo-worfklow-run-details.tsx
+
+# ===============================================
+# Claude CODE
+# ===============================================
+
+graphify-out/
+.claude
+CLAUDE.md
+README.md
